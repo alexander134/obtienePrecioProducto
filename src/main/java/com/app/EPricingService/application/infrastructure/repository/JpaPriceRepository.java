@@ -3,8 +3,6 @@ package com.app.EPricingService.application.infrastructure.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.app.EPricingService.domain.model.Price;
@@ -15,7 +13,6 @@ public class JpaPriceRepository implements PriceRepository {
 
     private final JpaPriceCrudRepository jpaPriceCrudRepository;
 
-    @Autowired
     public JpaPriceRepository(JpaPriceCrudRepository jpaPriceCrudRepository) {
         this.jpaPriceCrudRepository = jpaPriceCrudRepository;
     }

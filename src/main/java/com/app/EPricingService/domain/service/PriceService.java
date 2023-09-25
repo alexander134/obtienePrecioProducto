@@ -2,22 +2,25 @@ package com.app.EPricingService.domain.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.app.EPricingService.domain.model.AppliedPrice;
+import com.app.EPricingService.application.dto.AppliedPriceDTO;
+import com.app.EPricingService.application.dto.PriceDTO;
+import com.app.EPricingService.application.exceptionhandler.PriceNotFoundException;
+import com.app.EPricingService.application.mapper.DtoMapperService;
 import com.app.EPricingService.domain.model.Price;
 import com.app.EPricingService.domain.repository.PriceRepository;
-import com.app.EPricingService.exception.PriceNotFoundException;
 
 @Service
 public class PriceService {
 
     private final PriceRepository priceRepository;
+    private final DtoMapperService dtoMapperService;
 
-    @Autowired
-    public PriceService(PriceRepository priceRepository) {
+    public PriceService(PriceRepository priceRepository, DtoMapperService dtoMapperService) {
+        this.dtoMapperService = dtoMapperService;
         this.priceRepository = priceRepository;
     }
 
@@ -26,25 +29,19 @@ public class PriceService {
                               .orElseThrow(() -> new PriceNotFoundException("Precio no encontrado"));
     }
     
-    public List<Price> findAllByProductId(Integer productId) {
-        return priceRepository.findAllByProductId(productId);
+    public List<PriceDTO> findAllByProductId(Integer productId) {
+        return priceRepository.findAllByProductId(productId).stream().map(dtoMapperService::convertToDto).collect(Collectors.toList());
     }
     
-    public List<Price> findAllPrice() {
-        return priceRepository.findAll();
+    public List<PriceDTO> findAllPrice() {
+        return priceRepository.findAll().stream().map(dtoMapperService::convertToDto).collect(Collectors.toList());
     }
     
-    public AppliedPrice findAppliedPrice(LocalDateTime applicationDate, Integer productId, Integer brandId) {
+    public AppliedPriceDTO findAppliedPrice(LocalDateTime applicationDate, Integer productId, Integer brandId) {
         Price applicablePrice = priceRepository.findApplicablePrice(brandId, productId, applicationDate)
                                                .orElseThrow(() -> new PriceNotFoundException("Precio no encontrado"));
+        AppliedPriceDTO appliedPriceDTO = dtoMapperService.convertToDto(dtoMapperService.convertToAppliedPrice(applicablePrice));
         
-        AppliedPrice appliedPrice = new AppliedPrice();
-        appliedPrice.setProductId(applicablePrice.getProductId());
-        appliedPrice.setBrandId(applicablePrice.getBrandId());
-        appliedPrice.setFinalPrice(applicablePrice.getPrice());
-        appliedPrice.setStartDate(applicablePrice.getStartDate());
-        appliedPrice.setEndDate(applicablePrice.getEndDate());
-        
-        return appliedPrice;
+        return appliedPriceDTO;
     }
 }

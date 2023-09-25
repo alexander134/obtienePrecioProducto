@@ -1,4 +1,4 @@
-package com.app.EPricingService.exception;
+package com.app.EPricingService.application.exceptionhandler;
 
 public class PriceNotFoundException extends RuntimeException {
 	
